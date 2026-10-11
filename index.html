@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IGCSE Math Practice</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="boot-msg" style="padding:14px 20px;background:#fef3c7;color:#78350f;font:14px system-ui,sans-serif">Loading&hellip; If this yellow message stays, the files next to this page are missing (style.css, app.js, data/). Extract or clone the <b>whole</b> repository folder &mdash; do not copy index.html on its own &mdash; and open <code>app/index.html</code> from inside it.</div>
+<div id="connect" hidden>
+  <div class="card">
+    <h2>Connect to your private repository</h2>
+    <p>The question images stay in your private GitHub repository. This page fetches them only when you open a question, using a read-only token that is stored in this browser only.</p>
+    <ol>
+      <li>GitHub &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; <b>Fine-grained tokens</b> &rarr; Generate new token.</li>
+      <li>Expiration: 90 days. Repository access: <b>Only select repositories</b> &rarr; <code>IGCSE-math</code>.</li>
+      <li>Permissions &rarr; Repository permissions &rarr; <b>Contents: Read-only</b> (nothing else).</li>
+      <li>Generate, copy the token and paste it below.</li>
+    </ol>
+    <input id="c-token" type="password" placeholder="github_pat_..." autocomplete="off">
+    <button id="c-test">Test connection</button>
+    <p id="c-msg" aria-live="polite"></p>
+  </div>
+</div>
+
+<div id="settings" class="overlay" hidden>
+  <div class="sheet" role="dialog" aria-label="Settings">
+    <div class="sheet-head"><h2>Settings</h2><button id="settings-close" aria-label="Close">&times;</button></div>
+    <p id="review-stats" class="muted"></p>
+    <h3>Tag editor</h3>
+    <p class="muted">Fix a question's topic, subtopic or difficulty if it looks wrong.</p>
+    <div class="row">
+      <button id="open-editor">Open tag editor</button>
+      <button id="edit-tags" hidden>Fix the open question</button>
+    </div>
+    <p id="set-q-label" class="muted" hidden></p>
+    <h3>Backup</h3>
+    <p class="muted">Your tag edits and &#9873; review-later marks live in this browser only. Export them to keep a copy or move them to another device.</p>
+    <div class="row">
+      <button id="export-overrides">Export my data</button>
+      <label class="file btn">Import <input id="import-overrides" type="file" accept="application/json"></label>
+    </div>
+    <h3>Reset</h3>
+    <div class="row">
+      <button id="clear-marks">Clear all &#9873; marks</button>
+      <button id="reset-overrides">Discard all my tag edits</button>
+    </div>
+    <p id="version" class="muted" hidden></p>
+    <div id="conn-box" hidden>
+      <h3>Connection</h3>
+      <div class="row">
+        <button id="disconnect">Disconnect (forget token)</button>
+        <button id="clear-cache">Clear cached images</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1>IGCSE Math Practice</h1>
+  <nav>
+    <button data-view="browse" class="active">Browse</button>
+    <button data-view="practice">Practice</button>
+    <button data-view="review" id="nav-review" hidden>Tag editor</button>
+  </nav>
+  <button id="open-settings" class="icon-btn" aria-label="Settings" title="Settings">&#9881;</button>
+</header>
+
+<main id="browse">
+  <div class="topbar">
+    <div id="b-scope" class="seg">
+      <button data-scope="Core">Core (0580)</button>
+      <button data-scope="Extended">Extended (0580)</button>
+      <button data-scope="Additional">Additional Maths (0606)</button>
+    </div>
+  </div>
+  <div class="b-sum">
+    <p id="b-summary" class="muted"></p>
+    <button id="b-marked" hidden></button>
+  </div>
+  <div id="b-cards"></div>
+</main>
+
+<main id="practice" hidden>
+  <div id="filterbar">
+    <div class="fb-head">
+      <button id="fb-toggle" aria-expanded="false" aria-controls="fb-body">Filters &#9662;</button>
+      <span id="fb-summary" class="muted"></span>
+      <button id="clear-filters">Clear</button>
+    </div>
+    <div class="fb-body" id="fb-body">
+      <label>Course
+        <select id="f-course"><option value="">All</option><option value="Core">Core</option><option value="Extended">Extended</option><option value="Additional">Additional Maths</option></select></label>
+      <label class="full-m">Topic
+        <select id="f-topic"><option value="">All</option></select></label>
+      <label class="wide">Subtopic
+        <select id="f-subtopic"><option value="">All</option></select></label>
+      <label>Paper
+        <select id="f-paper"><option value="">All</option></select></label>
+      <label>Difficulty
+        <select id="f-diff"><option value="">All</option><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></label>
+      <label>Year
+        <select id="f-year"><option value="">All</option></select></label>
+      <label>Session
+        <select id="f-month"><option value="">All</option><option value="Mar">Feb/March</option><option value="Jun">May/June</option><option value="Nov">Oct/November</option><option value="Spec">Specimen</option></select></label>
+      <label class="chk"><input id="f-marked" type="checkbox"> &#9873; Review-later only</label>
+      <button id="more-toggle" aria-expanded="false">More &#9662;</button>
+      <div id="more-filters" hidden>
+        <label>Variant
+          <select id="f-var"><option value="">All</option><option value="1">Variant 1</option><option value="2">Variant 2</option><option value="3">Variant 3</option></select></label>
+        <label>Question number
+          <input id="f-qnum" type="number" min="1" inputmode="numeric" placeholder="any"></label>
+      </div>
+      <button id="apply" class="primary">Show questions</button>
+    </div>
+  </div>
+  <div id="p-body" class="split">
+    <aside id="p-list" class="side">
+      <div class="list-head"><span id="count"></span><button class="list-close" id="p-list-close">Close &times;</button></div>
+      <ul id="list"></ul>
+    </aside>
+    <section id="viewer" class="main">
+      <div class="toolbar">
+        <button id="list-toggle" title="Show or hide the question list">&#9776; <span id="list-label">List</span></button>
+        <button id="prev" aria-label="Previous question">&lsaquo; Prev</button>
+        <button id="next" aria-label="Next question">Next &rsaquo;</button>
+        <span class="grow"></span>
+        <button id="mark" class="mark-btn" aria-pressed="false">&#9873; Review later</button>
+        <button id="random" title="Open a random question from the list">Random</button>
+        <div class="now" id="now"></div>
+        <span class="pos" aria-hidden="true"><i id="pos-bar"></i></span>
+      </div>
+      <div id="empty">Pick a topic in <b>Browse</b>, or open the question list.</div>
+      <div id="question" hidden>
+        <div id="meta"></div>
+        <div id="panes">
+          <div class="pane"><h3>Question</h3><img id="q-img" alt="Question"></div>
+          <div class="pane" id="ms-pane">
+            <h3>Mark scheme <button id="toggle-ms">Show mark scheme</button></h3>
+            <div id="ms-cover">Try the question first, then press <b>Show mark scheme</b>.</div>
+            <img id="ms-img" alt="Mark scheme" hidden>
+            <p id="ms-note" class="muted" hidden></p>
+          </div>
+        </div>
+        <div class="actions bottom-nav">
+          <button id="prev2">&lsaquo; Prev</button>
+          <span class="grow"></span>
+          <button id="mark2" class="mark-btn" aria-pressed="false">&#9873; Review later</button>
+          <span class="grow"></span>
+          <button id="next2">Next &rsaquo;</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<main id="review" class="split" hidden>
+  <aside id="r-side" class="side">
+    <div class="list-head"><span id="r-count"></span><button class="list-close" id="r-list-close">Close &times;</button></div>
+    <div id="r-filters">
+      <label>Show
+        <select id="r-filter">
+          <option value="all">All questions</option>
+          <option value="edited">Edited by me</option>
+        </select></label>
+      <label>Course
+        <select id="r-course"><option value="">All</option><option value="Core">Core</option><option value="Extended">Extended</option><option value="Additional">Additional Maths</option></select></label>
+      <label>Paper
+        <select id="r-paper"><option value="">All</option></select></label>
+      <label>Year
+        <select id="r-year"><option value="">All</option></select></label>
+      <label>Session
+        <select id="r-month"><option value="">All</option><option value="Mar">Feb/March</option><option value="Jun">May/June</option><option value="Nov">Oct/November</option><option value="Spec">Specimen</option></select></label>
+    </div>
+    <ul id="r-list"></ul>
+  </aside>
+  <section id="r-main" class="main">
+    <div class="toolbar">
+      <button id="r-list-toggle" title="Show or hide the question list">&#9776; <span id="r-list-label">List</span></button>
+      <button id="r-prev" aria-label="Previous question">&lsaquo; Prev</button>
+      <button id="r-next" aria-label="Next question">Next &rsaquo;</button>
+      <div class="now" id="r-now"></div>
+      <span class="pos" aria-hidden="true"><i id="r-pos-bar"></i></span>
+    </div>
+    <div id="r-empty">Open the question list and pick a question.</div>
+    <div id="r-detail" hidden>
+      <div id="r-meta"></div>
+      <div id="r-note"></div>
+      <div id="r-images">
+        <div><h3>Question</h3><img id="r-q-img" alt="Question"></div>
+        <div><h3>Mark scheme</h3><img id="r-ms-img" alt="Mark scheme"></div>
+      </div>
+      <div id="r-edit">
+        <label>Topic <select id="e-topic"></select></label>
+        <label>Subtopic <select id="e-sub"></select></label>
+        <label>Also covers (optional, up to 3) <select id="e-extra" multiple size="4"></select></label>
+        <div class="diff">Difficulty <span id="e-diff"></span></div>
+      </div>
+      <div class="actions">
+        <button id="r-save">Save changes</button>
+        <button id="r-reset">Reset to original</button>
+      </div>
+      <div id="r-saved" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+<script src="data/config.js"></script>
+<script src="data/data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
